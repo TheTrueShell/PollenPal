@@ -11,6 +11,7 @@ A FastAPI-based REST API for tracking UK pollen levels and forecasts. Get real-t
 - 📍 **Location coordinates** for mapping integration
 - 🚀 **Fast and reliable** FastAPI-based REST API
 - 📚 **Interactive documentation** with Swagger UI
+- 🖥️ **Command-line interface** for terminal usage
 
 ## Quick Start
 
@@ -27,23 +28,42 @@ cd PollenPal
 uv sync
 
 # Run the API server
-uv run python main.py
+python scripts/run_dev.py
 ```
 
-The API will be available at `http://localhost:8000`
+The API will be available at `http://localhost:3000`
 
 ### Alternative Installation
 
 If you prefer using pip:
 
 ```bash
-pip install fastapi uvicorn requests beautifulsoup4 pydantic
-python main.py
+# Install dependencies
+pip install -e .
+
+# Run the API server
+python scripts/run_dev.py
+
+# Or use uvicorn directly
+uvicorn src.pollenpal.api.main:app --reload --port 3000
+```
+
+### CLI Installation
+
+After installing the package, you can use the command-line interface:
+
+```bash
+# Install the package to enable CLI
+pip install -e .
+
+# Use the CLI
+pollenpal London
+pollenpal "SW1A 1AA" --forecast --advice
 ```
 
 ## API Endpoints
 
-### Base URL: `http://localhost:8000`
+### Base URL: `http://localhost:3000`
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
@@ -55,30 +75,50 @@ python main.py
 | `/pollen/{city}/detailed` | GET | Detailed pollen breakdown by type |
 | `/health` | GET | API health check |
 | `/docs` | GET | Interactive API documentation (Swagger UI) |
-| `/redoc` | GET | Alternative API documentation |
 
 ## Usage Examples
 
-### Get Current Pollen Data
+### API Usage
+
+#### Get Current Pollen Data
 
 ```bash
 # For a city
-curl "http://localhost:8000/pollen/London"
+curl "http://localhost:3000/pollen/London"
 
 # For a postcode
-curl "http://localhost:8000/pollen/SW1A%201AA"
+curl "http://localhost:3000/pollen/SW1A%201AA"
 ```
 
-### Get 5-Day Forecast
+#### Get 5-Day Forecast
 
 ```bash
-curl "http://localhost:8000/pollen/Manchester/forecast"
+curl "http://localhost:3000/pollen/Manchester/forecast"
 ```
 
-### Get Health Advice
+#### Get Health Advice
 
 ```bash
-curl "http://localhost:8000/pollen/Birmingham/advice"
+curl "http://localhost:3000/pollen/Birmingham/advice"
+```
+
+### CLI Usage
+
+```bash
+# Basic pollen check
+pollenpal London
+
+# Get forecast and advice
+pollenpal Manchester --forecast --advice
+
+# Detailed analysis
+pollenpal "M1 1AA" --detailed
+
+# Interactive mode
+pollenpal --interactive
+
+# JSON output
+pollenpal London --json
 ```
 
 ### Response Examples
@@ -141,23 +181,52 @@ curl "http://localhost:8000/pollen/Birmingham/advice"
 
 ```
 PollenPal/
-├── main.py              # FastAPI application
-├── cli.py               # Original CLI version
-├── run_dev.py           # Development server runner
-├── test_api.py          # API tests
-├── pyproject.toml       # Project configuration
-├── README.md            # This file
-└── .python-version      # Python version specification
+├── src/
+│   └── pollenpal/
+│       ├── __init__.py
+│       ├── api/
+│       │   ├── __init__.py
+│       │   ├── main.py         # FastAPI application and routes
+│       │   └── models.py       # Pydantic models
+│       ├── cli/
+│       │   ├── __init__.py
+│       │   └── main.py         # CLI interface and formatting
+│       └── core/
+│           ├── __init__.py
+│           ├── tracker.py      # Shared PollenTracker class
+│           └── health.py       # Health advice logic
+├── tests/
+│   ├── __init__.py
+│   ├── conftest.py             # Test configuration and fixtures
+│   ├── test_api_endpoints.py   # API endpoint tests
+│   ├── test_models.py          # Pydantic model tests
+│   ├── test_pollen_tracker.py  # Core tracker tests
+│   ├── test_health.py          # Health advice tests
+│   └── test_integration.py     # Integration tests
+├── scripts/
+│   └── run_dev.py              # Development server script
+├── docs/
+│   └── RESTRUCTURE.md          # Project restructuring documentation
+├── pyproject.toml              # Project configuration
+├── pytest.ini                 # Test configuration
+├── .gitignore                  # Git ignore patterns
+└── README.md                   # This file
 ```
 
 ### Running in Development
 
 ```bash
-# Run with auto-reload for development
-uv run python run_dev.py
+# Run API server with auto-reload
+python scripts/run_dev.py
 
 # Or using uvicorn directly
-uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000
+uvicorn src.pollenpal.api.main:app --reload --host 0.0.0.0 --port 3000
+
+# Run CLI directly (without installation)
+python -m src.pollenpal.cli.main London
+
+# Run CLI in interactive mode
+python -m src.pollenpal.cli.main --interactive
 ```
 
 ### Testing
@@ -166,13 +235,20 @@ Run the test suite to verify everything is working:
 
 ```bash
 # Run all tests
-uv run pytest
+pytest
 
 # Run tests with verbose output
-uv run pytest -v
+pytest -v
 
 # Run specific test file
-uv run pytest test_api.py -v
+pytest tests/test_health.py -v
+
+# Run tests with coverage
+pytest --cov=src/pollenpal
+
+# Run specific test categories
+pytest -m unit          # Unit tests only
+pytest -m integration   # Integration tests only
 ```
 
 ### Code Quality
@@ -181,20 +257,45 @@ Format and lint your code:
 
 ```bash
 # Format code with black
-uv run black .
+black src/ tests/
 
 # Sort imports with isort
-uv run isort .
+isort src/ tests/
 
 # Run both formatting tools
-uv run black . && uv run isort .
+black src/ tests/ && isort src/ tests/
 ```
 
 ### API Documentation
 
 Once the server is running, visit:
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
+- **Swagger UI**: http://localhost:3000/docs
+- **ReDoc**: http://localhost:3000/redoc
+
+## Architecture
+
+### Modular Design
+
+The project follows a clean modular architecture:
+
+- **Core Module** (`src/pollenpal/core/`): Shared business logic
+  - `tracker.py`: Main PollenTracker class for data fetching and parsing
+  - `health.py`: Health advice generation logic
+
+- **API Module** (`src/pollenpal/api/`): FastAPI application
+  - `main.py`: FastAPI routes and application setup
+  - `models.py`: Pydantic models for request/response validation
+
+- **CLI Module** (`src/pollenpal/cli/`): Command-line interface
+  - `main.py`: CLI argument parsing and display formatting
+
+### Key Benefits
+
+- **No Code Duplication**: Single source of truth for core functionality
+- **Separation of Concerns**: Clear boundaries between API, CLI, and business logic
+- **Testability**: Each module can be tested independently
+- **Maintainability**: Easy to understand and modify
+- **Extensibility**: New features can be added to appropriate modules
 
 ## Data Source
 
@@ -224,8 +325,8 @@ Please be respectful with API usage. The underlying data source may have rate li
 2. Create a feature branch
 3. Make your changes
 4. Add tests if applicable
-5. Run the test suite: `uv run pytest`
-6. Format your code: `uv run black . && uv run isort .`
+5. Run the test suite: `pytest`
+6. Format your code: `black src/ tests/ && isort src/ tests/`
 7. Submit a pull request
 
 ## License
