@@ -24,11 +24,14 @@ This project uses [uv](https://github.com/astral-sh/uv) for dependency managemen
 git clone <your-repo-url>
 cd PollenPal
 
-# Install dependencies
+# Install dependencies and the package in development mode
 uv sync
+uv pip install -e .
 
 # Run the API server
 python scripts/run_dev.py
+# Or alternatively:
+uv run scripts/run_dev_uv.py
 ```
 
 The API will be available at `http://localhost:3000`
@@ -38,7 +41,7 @@ The API will be available at `http://localhost:3000`
 If you prefer using pip:
 
 ```bash
-# Install dependencies
+# Install dependencies and package in development mode
 pip install -e .
 
 # Run the API server
@@ -53,10 +56,7 @@ uvicorn src.pollenpal.api.main:app --reload --port 3000
 After installing the package, you can use the command-line interface:
 
 ```bash
-# Install the package to enable CLI
-pip install -e .
-
-# Use the CLI
+# The CLI is automatically available after installation
 pollenpal London
 pollenpal "SW1A 1AA" --forecast --advice
 ```
