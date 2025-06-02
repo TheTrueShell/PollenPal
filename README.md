@@ -1,6 +1,6 @@
 # PollenPal API 🌾
 
-A FastAPI-based REST API for tracking UK pollen levels and forecasts. Get real-time pollen data, 5-day forecasts, and personalised health advice for any UK location.
+A production-ready FastAPI-based REST API for tracking UK pollen levels and forecasts. Get real-time pollen data, 5-day forecasts, and personalised health advice for any UK location.
 
 ## Features
 
@@ -12,10 +12,76 @@ A FastAPI-based REST API for tracking UK pollen levels and forecasts. Get real-t
 - 🚀 **Fast and reliable** FastAPI-based REST API
 - 📚 **Interactive documentation** with Swagger UI
 - 🖥️ **Command-line interface** for terminal usage
+- 🐳 **Production-ready** with Docker and automated deployment
+- 🔒 **Security-focused** with Nginx, SSL, and rate limiting
+- 📊 **Monitoring** with health checks and comprehensive logging
 
 ## Quick Start
 
-### Installation
+### Development Setup
+
+```bash
+# Clone the repository
+git clone <your-repo-url>
+cd PollenPal
+
+# Install dependencies
+python scripts/run.py install
+
+# Start development server
+python scripts/run.py dev
+```
+
+The API will be available at `http://localhost:3000`
+
+### Production Deployment
+
+```bash
+# Build production image
+python scripts/run.py build
+
+# Deploy to production
+python scripts/run.py deploy
+
+# Check status
+python scripts/run.py status
+```
+
+See [Production Deployment Guide](docs/PRODUCTION.md) for detailed instructions.
+
+## Script Commands
+
+Our script runner provides npm-like commands for all development and production tasks:
+
+### Development
+```bash
+python scripts/run.py dev              # Start development server
+python scripts/run.py dev:docker       # Start dev server in Docker
+python scripts/run.py install          # Install dependencies
+```
+
+### Testing
+```bash
+python scripts/run.py test             # Run all tests
+python scripts/run.py test:unit        # Unit tests only
+python scripts/run.py test:docker      # Docker container tests
+python scripts/run.py lint             # Code quality checks
+python scripts/run.py lint:fix         # Fix formatting issues
+```
+
+### Build & Deploy
+```bash
+python scripts/run.py build            # Build production image
+python scripts/run.py deploy           # Deploy to production
+python scripts/run.py start            # Start services
+python scripts/run.py stop             # Stop services
+python scripts/run.py logs             # View logs
+python scripts/run.py health           # Health check
+```
+
+Run `python scripts/run.py help` to see all available commands.
+
+## Installation
 
 This project uses [uv](https://github.com/astral-sh/uv) for dependency management:
 
@@ -29,12 +95,8 @@ uv sync
 uv pip install -e .
 
 # Run the API server
-python scripts/run_dev.py
-# Or alternatively:
-uv run scripts/run_dev_uv.py
+python scripts/run.py dev
 ```
-
-The API will be available at `http://localhost:3000`
 
 ### Alternative Installation
 
@@ -63,7 +125,7 @@ pollenpal "SW1A 1AA" --forecast --advice
 
 ## API Endpoints
 
-### Base URL: `http://localhost:3000`
+### Base URL: `http://localhost:3000` (dev) / `http://localhost:8000` (prod)
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
@@ -175,6 +237,36 @@ pollenpal London --json
 }
 ```
 
+## Production Features
+
+### Docker Support
+
+- **Multi-stage builds** for optimised production images
+- **Non-root user** for enhanced security
+- **Health checks** for container monitoring
+- **Automatic restarts** with proper error handling
+
+### Load Balancing & Scaling
+
+- **Nginx reverse proxy** with rate limiting
+- **Horizontal scaling** support (multiple API instances)
+- **SSL/TLS termination** with modern cipher suites
+- **Gzip compression** for improved performance
+
+### Monitoring & Logging
+
+- **Structured logging** with configurable levels
+- **Health check endpoints** for monitoring systems
+- **Comprehensive error handling** with proper HTTP status codes
+- **Request/response logging** for debugging
+
+### Security
+
+- **Rate limiting** to prevent abuse
+- **CORS configuration** for web applications
+- **Security headers** (HSTS, X-Frame-Options, etc.)
+- **Input validation** with Pydantic models
+
 ## Development
 
 ### Project Structure
@@ -204,9 +296,21 @@ PollenPal/
 │   ├── test_health.py          # Health advice tests
 │   └── test_integration.py     # Integration tests
 ├── scripts/
-│   └── run_dev.py              # Development server script
+│   ├── run.py                  # Main script runner (npm-like commands)
+│   ├── build.py                # Production build script
+│   ├── deploy.py               # Deployment script
+│   ├── test.py                 # Comprehensive test runner
+│   ├── run_dev.py              # Development server script
+│   └── run_dev_uv.py           # Alternative dev script
+├── nginx/
+│   └── nginx.conf              # Nginx configuration
 ├── docs/
+│   ├── PRODUCTION.md           # Production deployment guide
 │   └── RESTRUCTURE.md          # Project restructuring documentation
+├── Dockerfile                  # Multi-stage production Dockerfile
+├── docker-compose.yml          # Development and production services
+├── .dockerignore               # Docker build context exclusions
+├── env.example                 # Environment configuration template
 ├── pyproject.toml              # Project configuration
 ├── pytest.ini                 # Test configuration
 ├── .gitignore                  # Git ignore patterns
@@ -217,7 +321,7 @@ PollenPal/
 
 ```bash
 # Run API server with auto-reload
-python scripts/run_dev.py
+python scripts/run.py dev
 
 # Or using uvicorn directly
 uvicorn src.pollenpal.api.main:app --reload --host 0.0.0.0 --port 3000
@@ -231,17 +335,16 @@ python -m src.pollenpal.cli.main --interactive
 
 ### Testing
 
-Run the test suite to verify everything is working:
+Run the comprehensive test suite:
 
 ```bash
 # Run all tests
-pytest
+python scripts/run.py test
 
-# Run tests with verbose output
-pytest -v
-
-# Run specific test file
-pytest tests/test_health.py -v
+# Run specific test types
+python scripts/run.py test:unit
+python scripts/run.py test:integration
+python scripts/run.py test:docker
 
 # Run tests with coverage
 pytest --cov=src/pollenpal
@@ -256,21 +359,22 @@ pytest -m integration   # Integration tests only
 Format and lint your code:
 
 ```bash
-# Format code with black
+# Check code quality
+python scripts/run.py lint
+
+# Fix formatting issues
+python scripts/run.py lint:fix
+
+# Or run tools directly
 black src/ tests/
-
-# Sort imports with isort
 isort src/ tests/
-
-# Run both formatting tools
-black src/ tests/ && isort src/ tests/
 ```
 
 ### API Documentation
 
 Once the server is running, visit:
-- **Swagger UI**: http://localhost:3000/docs
-- **ReDoc**: http://localhost:3000/redoc
+- **Swagger UI**: http://localhost:3000/docs (dev) / http://localhost:8000/docs (prod)
+- **ReDoc**: http://localhost:3000/redoc (dev) / http://localhost:8000/redoc (prod)
 
 ## Architecture
 
@@ -296,6 +400,7 @@ The project follows a clean modular architecture:
 - **Testability**: Each module can be tested independently
 - **Maintainability**: Easy to understand and modify
 - **Extensibility**: New features can be added to appropriate modules
+- **Production Ready**: Docker, monitoring, and deployment automation
 
 ## Data Source
 
@@ -314,10 +419,13 @@ The API provides clear error messages:
 - `404 Not Found`: Location not found or no data available
 - `500 Internal Server Error`: Issues fetching data from the source
 - `422 Validation Error`: Invalid request parameters
+- `429 Too Many Requests`: Rate limit exceeded
 
 ## Rate Limiting
 
-Please be respectful with API usage. The underlying data source may have rate limits.
+The production deployment includes rate limiting:
+- **Development**: No limits
+- **Production**: 100 requests per minute per IP (configurable)
 
 ## Contributing
 
@@ -325,8 +433,8 @@ Please be respectful with API usage. The underlying data source may have rate li
 2. Create a feature branch
 3. Make your changes
 4. Add tests if applicable
-5. Run the test suite: `pytest`
-6. Format your code: `black src/ tests/ && isort src/ tests/`
+5. Run the test suite: `python scripts/run.py test`
+6. Format your code: `python scripts/run.py lint:fix`
 7. Submit a pull request
 
 ## License
@@ -336,6 +444,8 @@ This project is open source. Please check the license file for details.
 ## Support
 
 For issues, questions, or contributions, please open an issue on the repository.
+
+For production deployment help, see the [Production Deployment Guide](docs/PRODUCTION.md).
 
 ---
 
