@@ -126,7 +126,7 @@ class TestPollenEndpoints:
         assert "weeds" in breakdown
     
     @patch('src.pollenpal.api.main.tracker.get_pollen_data')
-    @patch('src.pollenpal.core.health.get_health_advice')
+    @patch('src.pollenpal.api.main.get_health_advice')
     def test_get_health_advice_success(self, mock_get_advice, mock_get_data, client, mock_pollen_data):
         """Test health advice endpoint"""
         mock_get_data.return_value = mock_pollen_data
