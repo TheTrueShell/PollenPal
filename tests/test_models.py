@@ -5,7 +5,7 @@ Tests for Pydantic models
 import pytest
 from pydantic import ValidationError
 
-from main import (
+from src.pollenpal.api.models import (
     PollenLevel,
     DayForecast,
     DetailedBreakdown,

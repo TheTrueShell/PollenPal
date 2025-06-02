@@ -6,7 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import Mock, patch
 
-from main import app, tracker
+from src.pollenpal.api.main import app
 
 
 @pytest.fixture

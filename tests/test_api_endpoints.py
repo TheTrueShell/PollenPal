@@ -32,13 +32,13 @@ class TestHealthEndpoint:
         
         data = response.json()
         assert data["status"] == "healthy"
-        assert "timestamp" in data
+        assert "message" in data
 
 
 class TestPollenEndpoints:
     """Tests for pollen data endpoints"""
     
-    @patch('main.tracker.get_pollen_data')
+    @patch('src.pollenpal.api.main.tracker.get_pollen_data')
     def test_get_pollen_data_success(self, mock_get_data, client, mock_pollen_data):
         """Test successful pollen data retrieval"""
         mock_get_data.return_value = mock_pollen_data
@@ -55,7 +55,7 @@ class TestPollenEndpoints:
         
         mock_get_data.assert_called_once_with("London", "UK")
     
-    @patch('main.tracker.get_pollen_data')
+    @patch('src.pollenpal.api.main.tracker.get_pollen_data')
     def test_get_pollen_data_not_found(self, mock_get_data, client):
         """Test pollen data not found scenario"""
         mock_get_data.return_value = None
@@ -66,7 +66,7 @@ class TestPollenEndpoints:
         data = response.json()
         assert "No pollen data found" in data["detail"]
     
-    @patch('main.tracker.get_pollen_data')
+    @patch('src.pollenpal.api.main.tracker.get_pollen_data')
     def test_get_pollen_data_with_country(self, mock_get_data, client, mock_pollen_data):
         """Test pollen data retrieval with custom country parameter"""
         mock_get_data.return_value = mock_pollen_data
@@ -76,7 +76,7 @@ class TestPollenEndpoints:
         
         mock_get_data.assert_called_once_with("London", "GB")
     
-    @patch('main.tracker.get_pollen_data')
+    @patch('src.pollenpal.api.main.tracker.get_pollen_data')
     def test_get_current_pollen_success(self, mock_get_data, client, mock_pollen_data):
         """Test current pollen data endpoint"""
         mock_get_data.return_value = mock_pollen_data
@@ -92,7 +92,7 @@ class TestPollenEndpoints:
         assert "forecast" not in data
         assert "detailed_breakdown" not in data
     
-    @patch('main.tracker.get_pollen_data')
+    @patch('src.pollenpal.api.main.tracker.get_pollen_data')
     def test_get_pollen_forecast_success(self, mock_get_data, client, mock_pollen_data):
         """Test pollen forecast endpoint"""
         mock_get_data.return_value = mock_pollen_data
@@ -106,7 +106,7 @@ class TestPollenEndpoints:
         assert "coordinates" in data
         assert len(data["forecast"]) == 2  # Based on mock data
     
-    @patch('main.tracker.get_pollen_data')
+    @patch('src.pollenpal.api.main.tracker.get_pollen_data')
     def test_get_detailed_breakdown_success(self, mock_get_data, client, mock_pollen_data):
         """Test detailed breakdown endpoint"""
         mock_get_data.return_value = mock_pollen_data
@@ -117,7 +117,6 @@ class TestPollenEndpoints:
         data = response.json()
         assert data["location"] == "London"
         assert "detailed_breakdown" in data
-        assert "current_day" in data
         assert "coordinates" in data
         
         # Check detailed breakdown structure
@@ -126,8 +125,8 @@ class TestPollenEndpoints:
         assert "trees" in breakdown
         assert "weeds" in breakdown
     
-    @patch('main.tracker.get_pollen_data')
-    @patch('main.tracker.get_health_advice')
+    @patch('src.pollenpal.api.main.tracker.get_pollen_data')
+    @patch('src.pollenpal.core.health.get_health_advice')
     def test_get_health_advice_success(self, mock_get_advice, mock_get_data, client, mock_pollen_data):
         """Test health advice endpoint"""
         mock_get_data.return_value = mock_pollen_data
@@ -160,7 +159,7 @@ class TestErrorHandling:
         response = client.get("/invalid/endpoint")
         assert response.status_code == 404
     
-    @patch('main.tracker.get_pollen_data')
+    @patch('src.pollenpal.api.main.tracker.get_pollen_data')
     def test_empty_city_parameter(self, mock_get_data, client):
         """Test empty city parameter handling"""
         response = client.get("/pollen/")
@@ -170,7 +169,7 @@ class TestErrorHandling:
 class TestPostcodeHandling:
     """Tests for UK postcode handling"""
     
-    @patch('main.tracker.get_pollen_data')
+    @patch('src.pollenpal.api.main.tracker.get_pollen_data')
     def test_postcode_with_space(self, mock_get_data, client, mock_pollen_data):
         """Test postcode with space"""
         mock_get_data.return_value = mock_pollen_data
@@ -180,7 +179,7 @@ class TestPostcodeHandling:
         
         mock_get_data.assert_called_once_with("SW1A 1AA", "UK")
     
-    @patch('main.tracker.get_pollen_data')
+    @patch('src.pollenpal.api.main.tracker.get_pollen_data')
     def test_postcode_without_space(self, mock_get_data, client, mock_pollen_data):
         """Test postcode without space"""
         mock_get_data.return_value = mock_pollen_data

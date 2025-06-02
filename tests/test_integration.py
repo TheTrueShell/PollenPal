@@ -83,7 +83,7 @@ class TestFullAPIFlow:
 class TestAPIConsistency:
     """Tests for API response consistency across endpoints"""
     
-    @patch('main.tracker.get_pollen_data')
+    @patch('src.pollenpal.api.main.tracker.get_pollen_data')
     def test_location_consistency(self, mock_get_data, client, mock_pollen_data):
         """Test that location is consistent across all endpoints"""
         mock_get_data.return_value = mock_pollen_data
@@ -101,7 +101,7 @@ class TestAPIConsistency:
             data = response.json()
             assert data["location"] == "London"
     
-    @patch('main.tracker.get_pollen_data')
+    @patch('src.pollenpal.api.main.tracker.get_pollen_data')
     def test_coordinates_consistency(self, mock_get_data, client, mock_pollen_data):
         """Test that coordinates are consistent across endpoints"""
         mock_get_data.return_value = mock_pollen_data
@@ -125,7 +125,7 @@ class TestAPIConsistency:
 class TestRealWorldScenarios:
     """Tests simulating real-world usage scenarios"""
     
-    @patch('main.tracker.get_pollen_data')
+    @patch('src.pollenpal.api.main.tracker.get_pollen_data')
     def test_high_pollen_day_scenario(self, mock_get_data, client):
         """Test scenario with high pollen levels"""
         high_pollen_data = {
@@ -152,7 +152,7 @@ class TestRealWorldScenarios:
         assert len(data["high_levels"]) >= 2  # grass and trees
         assert any("HIGH ALERT" in advice for advice in data["advice"])
     
-    @patch('main.tracker.get_pollen_data')
+    @patch('src.pollenpal.api.main.tracker.get_pollen_data')
     def test_low_pollen_day_scenario(self, mock_get_data, client):
         """Test scenario with low pollen levels"""
         low_pollen_data = {

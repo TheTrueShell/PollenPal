@@ -1,9 +1,27 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "pollenpal"
 version = "0.1.0"
 description = "UK Pollen Tracking API - FastAPI service for real-time pollen data and forecasts"
 readme = "README.md"
 requires-python = ">=3.10"
+authors = [
+    {name = "PollenPal Team"},
+]
+license = {text = "MIT"}
+keywords = ["pollen", "api", "uk", "fastapi", "health", "allergy"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
 dependencies = [
     "fastapi>=0.115.12",
     "uvicorn>=0.34.3",
@@ -13,7 +31,13 @@ dependencies = [
 ]
 
 [project.scripts]
-pollenpal = "main:app"
+pollenpal = "src.pollenpal.cli.main:main"
+pollenpal-api = "uvicorn:main"
+
+[project.urls]
+Homepage = "https://github.com/pollenpal/pollenpal"
+Repository = "https://github.com/pollenpal/pollenpal"
+Issues = "https://github.com/pollenpal/pollenpal/issues"
 
 [dependency-groups]
 dev = [
@@ -23,3 +47,31 @@ dev = [
     "pytest>=8.3.5",
     "pytest-cov>=6.1.1",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pollenpal"]
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["pollenpal"]
+src_paths = ["src", "tests"]
