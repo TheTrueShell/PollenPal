@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  # Development service
+  pollenpal-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app/src:ro
+      - ./tests:/app/tests:ro
+      - ./pyproject.toml:/app/pyproject.toml:ro
+    environment:
+      - POLLENPAL_ENV=development
+      - PYTHONPATH=/app/src
+    command: >
+      sh -c "
+        /app/.venv/bin/pip install -e . &&
+        /app/.venv/bin/uvicorn pollenpal.api.main:app 
+        --host 0.0.0.0 
+        --port 3000 
+        --reload 
+        --reload-dir /app/src
+      "
+    profiles:
+      - dev
+    networks:
+      - pollenpal-network
+
+  # Production service
+  pollenpal-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "8000:8000"
+    environment:
+      - POLLENPAL_ENV=production
+    restart: unless-stopped
+    profiles:
+      - prod
+    networks:
+      - pollenpal-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Nginx reverse proxy for production
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - pollenpal-prod
+    profiles:
+      - prod
+    networks:
+      - pollenpal-network
+    restart: unless-stopped
+
+  # Redis for caching (optional for production)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    profiles:
+      - prod
+      - cache
+    networks:
+      - pollenpal-network
+    restart: unless-stopped
+
+networks:
+  pollenpal-network:
+    driver: bridge
+
+volumes:
+  redis-data: 
