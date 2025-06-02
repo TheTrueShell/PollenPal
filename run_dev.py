@@ -13,5 +13,5 @@ if __name__ == "__main__":
         port=3000,
         reload=True,
         reload_dirs=["./"],
-        log_level="info"
-    ) 
+        log_level="info",
+    )
