@@ -21,7 +21,7 @@ This project uses [uv](https://github.com/astral-sh/uv) for dependency managemen
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
+git clone https://github.com/TheTrueShell/PollenPal
 cd PollenPal
 
 # Install dependencies and the package in development mode
