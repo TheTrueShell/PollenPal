@@ -175,6 +175,71 @@ pollenpal London --json
 }
 ```
 
+## Docker Deployment 🐳
+
+For easy deployment and production use, PollenPal includes comprehensive Docker support with automated deployment scripts.
+
+### Quick Docker Start
+
+**Linux/macOS:**
+```bash
+# Simple development deployment
+./scripts/deploy.sh
+
+# Production deployment with nginx reverse proxy
+./scripts/deploy.sh prod --build
+```
+
+**Windows (PowerShell):**
+```powershell
+# Simple development deployment
+.\scripts\deploy.ps1
+
+# Production deployment with nginx reverse proxy
+.\scripts\deploy.ps1 prod -Build
+```
+
+**Windows (Command Prompt):**
+```cmd
+REM Simple development deployment
+scripts\deploy.bat
+
+REM Production deployment with nginx reverse proxy
+scripts\deploy.bat prod --build
+```
+
+### Manual Docker Commands
+
+```bash
+# Build and run with docker-compose
+docker-compose up --build
+
+# Production deployment with nginx
+docker-compose -f docker-compose.prod.yml up --build
+
+# Run in background
+docker-compose up -d --build
+```
+
+### Docker Features
+
+- ✅ **Multi-stage builds** for optimised image size
+- ✅ **Non-root user** for enhanced security
+- ✅ **Health checks** for monitoring
+- ✅ **Nginx reverse proxy** for production
+- ✅ **Rate limiting** and security headers
+- ✅ **Resource limits** for production stability
+- ✅ **Automated deployment scripts** for all platforms
+
+### Accessing the Dockerised API
+
+- **Development**: `http://localhost:3000`
+- **Production** (with nginx): `http://localhost`
+- **Documentation**: `/docs` endpoint
+- **Health Check**: `/health` endpoint
+
+For detailed Docker documentation, see [`docker/README.md`](docker/README.md).
+
 ## Development
 
 ### Project Structure
