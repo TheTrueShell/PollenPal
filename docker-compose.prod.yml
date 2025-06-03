@@ -1,0 +1,98 @@
+services:
+  pollenpal-api:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: pollenpal-api
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - pollenpal-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: pollenpal-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx-logs:/var/log/nginx
+    depends_on:
+      - pollenpal-api
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - pollenpal-network
+
+  # Optional: Log aggregation with Fluentd
+  # fluentd:
+  #   image: fluent/fluentd:v1.16-debian-1
+  #   container_name: pollenpal-fluentd
+  #   volumes:
+  #     - ./fluentd/conf:/fluentd/etc
+  #     - nginx-logs:/var/log/nginx:ro
+  #   ports:
+  #     - "24224:24224"
+  #   networks:
+  #     - pollenpal-network
+
+  # Optional: Monitoring with Prometheus
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   container_name: pollenpal-prometheus
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+  #     - prometheus-data:/prometheus
+  #   command:
+  #     - '--config.file=/etc/prometheus/prometheus.yml'
+  #     - '--storage.tsdb.path=/prometheus'
+  #     - '--web.console.libraries=/etc/prometheus/console_libraries'
+  #     - '--web.console.templates=/etc/prometheus/consoles'
+  #   networks:
+  #     - pollenpal-network
+
+volumes:
+  nginx-logs:
+  # prometheus-data:
+
+networks:
+  pollenpal-network:
+    driver: bridge 

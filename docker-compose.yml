@@ -1,0 +1,37 @@
+services:
+  pollenpal-api:
+    build: .
+    container_name: pollenpal-api
+    ports:
+      - "3000:3000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - pollenpal-network
+
+  # Optional nginx reverse proxy (uncomment to use)
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: pollenpal-nginx
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./nginx/conf.d:/etc/nginx/conf.d:ro
+  #   depends_on:
+  #     - pollenpal-api
+  #   restart: unless-stopped
+  #   networks:
+  #     - pollenpal-network
+
+networks:
+  pollenpal-network:
+    driver: bridge 
